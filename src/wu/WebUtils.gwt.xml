@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='webutils'>
+  <!-- Inherit the core Web Toolkit stuff.                        -->
+  <inherits name='com.google.gwt.user.User'/>
+
+  <inherits name='com.google.gwt.widgetideas.GWTCanvas'/>
+  <inherits name="com.google.gwt.widgetideas.GlassPanel"/>
+  <inherits name='com.google.gwt.json.JSON'/>
+  <!-- <inherits name="com.google.gwt.widgetideas.DatePicker"/> -->
+  <!-- <inherits name='com.google.gwt.libideas.LibIdeas' />      -->
+  
+  <inherits name="com.google.gwt.maps.GoogleMaps" />
+  <!-- Inherit the default GWT style sheet.  You can change       -->
+  <!-- the theme of your GWT application by uncommenting          -->
+  <!-- any one of the following lines.                            -->
+  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
+  <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
+
+  <!-- Other module inherits                                      -->
+
+  <!-- Specify the app entry point class.                         -->
+  <!-- <entry-point class='wu.client.WebUtils'/>                  -->
+
+  <!-- Specify the paths for translatable code                    -->
+    <source path='client'/>
+    <source path="datastore"/>
+	<source path="client"/>
+	<source path="file"/>
+	<source path="questions"/>
+	<source path="events"/>
+    <source path="geostory"/>
+
+
+</module>

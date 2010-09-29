@@ -1,0 +1,34 @@
+<project name="WebUtils" default="wubigjar" basedir=".">
+	
+	<target name="gwt" description="creates a module JAR that other GWT applications can use">
+      <jar destfile="gwt.jar">
+        <fileset dir="bin/"/>
+        <fileset dir="src/"/>
+      </jar>
+    </target>
+
+	<target name="wujar" depends="wubigjar" description="Build Jar">
+		<echo>Build Jar</echo>
+		<delete file="wu.jar" />
+		<jar destfile="wu.jar" 
+			basedir="bin" 
+			includes="**/*.class">
+			<manifest>
+				<attribute name="Built-By" value="Joris Deguet www.deguet.org/joris" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="wubigjar" description="Build Big Jar including sources">
+		<echo>Build Big Jar</echo>
+		<delete file="wufat.jar" />
+		<jar destfile="wufat.jar">
+			<fileset dir="bin/"/>
+   			<fileset dir="src/"/>
+			<manifest>
+				<attribute name="Built-By" value="Joris Deguet www.deguet.org/joris" />
+			</manifest>
+		</jar>
+	</target>
+  
+</project>
