@@ -103,7 +103,7 @@ HasDoubleClickHandlers{
 	// so see if performance gets better.
 	TimeLine line;
 
-	boolean middleDebug = false;
+	boolean middleDebug = true;
 	Line middle;
 	Line middle2;
 
