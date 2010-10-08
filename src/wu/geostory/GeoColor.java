@@ -2,6 +2,11 @@ package wu.geostory;
 
 import java.util.Map;
 
+/**
+ * The GeoColor class holds colors that are used for the coloring algorithm, css outputs and others.
+ * @author joris
+ *
+ */
 public class GeoColor {
 
 	private final int red;
