@@ -24,7 +24,7 @@ public abstract class Question<Answer> {
 	public Question(String in){
 		id = LocalID.getOne();
 		this.intitule = in;
-		this.answerChannel = new WEventType<Answer>(new HandlerManager(null));
+		this.answerChannel = new WEventType<Answer>();
 	}
 	
 	public WEventType<Answer> answerChannel(){

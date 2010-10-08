@@ -67,14 +67,11 @@ public class GeoStory extends Composite implements ResizeHandler{
 	// The model with things related to position and dates
 	GeoStoryModel pad;
 
-	HandlerManager bus;
-
 	VerticalPanel controls;
 
 	public GeoStory(){
 		panel = new SplitLayoutPanel();
-		bus = new HandlerManager(null);
-		types = new GeoEventTypes(bus);
+		types = new GeoEventTypes();
 		pad = new GeoStoryModel(types);
 		//pad.populateRandomly(10);
 		{
@@ -192,6 +189,7 @@ public class GeoStory extends Composite implements ResizeHandler{
 									new ContentQuestion("Nom du lieu?"),
 									new WhereQuestion("Où ça sur la carte?")
 							);
+							
 							QPanel tested = new QPanel(q);
 							//tested.setSize("50%", "50%");
 							tested.center();tested.show();

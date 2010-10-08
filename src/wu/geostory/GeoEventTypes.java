@@ -29,20 +29,20 @@ public class GeoEventTypes {
 	
 	public final WEventType<GeoStoryItem> itemFromServer; // notify when the map view has changed
 	
-	public GeoEventTypes(HandlerManager bus){
+	public GeoEventTypes(){
 		// Server interaction events
-		getEventFromServer = new WEventType<String>(bus);
-		itemFromServer = new WEventType<GeoStoryItem>(bus);
+		getEventFromServer = new WEventType<String>();
+		itemFromServer = new WEventType<GeoStoryItem>();
 		// Date modifications events
-		centerEvent = new WEventType<Date>(bus);
-		panToCenterEvent = new WEventType<Date>(bus);
-		timeWindowEvent = new WEventType<Interval>(bus);
+		centerEvent = new WEventType<Date>();
+		panToCenterEvent = new WEventType<Date>();
+		timeWindowEvent = new WEventType<Interval>();
 		// Items selected 
-		itemSelected = new WEventType<GeoStoryItem>(bus);
-		itemOver = new WEventType<GeoStoryItem>(bus);
-		itemAdded = new WEventType<GeoStoryItem>(bus);
+		itemSelected = new WEventType<GeoStoryItem>();
+		itemOver = new WEventType<GeoStoryItem>();
+		itemAdded = new WEventType<GeoStoryItem>();
 		// Map events
-		mapViewChanged = new WEventType<LatLngBounds>(bus);
+		mapViewChanged = new WEventType<LatLngBounds>();
 	}
 	
 }

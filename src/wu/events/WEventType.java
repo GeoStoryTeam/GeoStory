@@ -24,9 +24,15 @@ public class WEventType<Element> {
 	
 	private HandlerManager bus;
 	
-	public WEventType(HandlerManager b){
+	private static HandlerManager defaultManager = new HandlerManager(null);
+	
+	private WEventType(HandlerManager b){
 		type = new GwtEvent.Type<WHandler<Element>>();
 		bus = b;
+	}
+	
+	public WEventType(){
+		this(defaultManager);
 	}
 	
 	private Type<WHandler<Element>> getType(){

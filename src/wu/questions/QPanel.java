@@ -35,13 +35,13 @@ public class QPanel extends DialogBox{
 
 	Questionnaire questionnaire;
 
-	Map<Question,Object> answers;
+	Map<Question,String> answers;
 
 	Button validate;
 	
 	public QPanel(Questionnaire q){
 		super(true);
-		answers = new HashMap<Question,Object>();
+		answers = new HashMap<Question,String>();
 		this.setText("Enter a new Event");
 		this.questionnaire = q;
 		DockLayoutPanel wrapper = new DockLayoutPanel(Style.Unit.PCT);
@@ -73,13 +73,13 @@ public class QPanel extends DialogBox{
 		}
 		pan = new StackLayoutPanel(Unit.EM);
 		wrapper.add(pan);
-		for (final Question question : q.questions){
+		for (final Question<String> question : q.questions){
 			Widget typeDependant = question.answerPan();
 			final HTML header = new HTML(question.intitule);
 			pan.add(typeDependant, header, 3);
-			question.answerChannel().registerHandler(new WHandler(){
+			question.answerChannel().registerHandler(new WHandler<String>(){
 				@Override
-				public void onEvent(WEvent elt) {
+				public void onEvent(WEvent<String> elt) {
 					if (elt.getElement() != null) {
 						answers.put(question, elt.getElement());
 						header.getElement().getStyle().setColor("green");
