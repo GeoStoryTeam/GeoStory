@@ -198,9 +198,9 @@ public class GeoStory extends Composite implements ResizeHandler{
 								public void onEvent(
 										WEvent<Map<String, String>> elt) {
 									Map<String,String> map = elt.getElement();
-									Window.alert("Questionnaire are  "+ elt.getElement().toString());
+									//Window.alert("Questionnaire are  "+ elt.getElement().toString());
 									String[] coord = map.get("Sur la carte?").split("\\|");
-									Window.alert("Questionnaire are  "+ elt.getElement().toString()+" "+Arrays.toString(coord));
+									//Window.alert("Questionnaire are  "+ elt.getElement().toString()+" "+Arrays.toString(coord));
 									LatLng ll = LatLng.newInstance(
 											Double.parseDouble(coord[0]), 
 											Double.parseDouble(coord[1]));//;
