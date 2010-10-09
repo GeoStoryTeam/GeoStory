@@ -12,10 +12,14 @@ public class Questionnaire {
 	
 	Question[] questions;
 	
-	WEventType<Map<Question,Answer>> answerChannel;
+	WEventType<Map<String,String>> answerChannel;
 	
 	public Questionnaire(Question... qs){
-		this.answerChannel = new WEventType<Map<Question,Answer>>();
+		this.answerChannel = new WEventType<Map<String,String>>();
 		this.questions = qs;
+	}
+
+	public WEventType<Map<String,String>> answerChannel() {
+		return answerChannel;
 	}
 }

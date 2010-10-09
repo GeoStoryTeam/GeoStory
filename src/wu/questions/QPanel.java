@@ -33,17 +33,22 @@ public class QPanel extends DialogBox{
 
 	StackLayoutPanel pan;
 
-	Questionnaire questionnaire;
+	final Questionnaire questionnaire;
 
-	Map<Question,String> answers;
+	Map<String,String> answers;
 
 	Button validate;
 	
 	public QPanel(Questionnaire q){
 		super(true);
-		answers = new HashMap<Question,String>();
+		answers = new HashMap<String,String>();
 		this.setText("Enter a new Event");
 		this.questionnaire = q;
+		q.answerChannel.registerHandler(new WHandler<Map<String,String>>(){
+			@Override
+			public void onEvent(WEvent<Map<String, String>> elt) {
+				hide();
+			}});
 		DockLayoutPanel wrapper = new DockLayoutPanel(Style.Unit.PCT);
 		wrapper.setSize("600px", "500px");
 		{
@@ -54,7 +59,7 @@ public class QPanel extends DialogBox{
 				validate.addClickHandler(new ClickHandler(){
 					@Override
 					public void onClick(ClickEvent event) {
-						Window.alert("Answers are  "+ answers.toString());
+						questionnaire.answerChannel.shareEvent(answers);
 					}});
 				buttons.add(validate);
 				validate.setEnabled(false);
@@ -81,7 +86,7 @@ public class QPanel extends DialogBox{
 				@Override
 				public void onEvent(WEvent<String> elt) {
 					if (elt.getElement() != null) {
-						answers.put(question, elt.getElement());
+						answers.put(question.intitule, elt.getElement());
 						header.getElement().getStyle().setColor("green");
 						validate();
 					}

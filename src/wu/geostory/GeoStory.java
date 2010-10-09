@@ -1,7 +1,9 @@
 package wu.geostory;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import wu.events.WHandler;
 import wu.events.WEvent;
@@ -187,11 +189,30 @@ public class GeoStory extends Composite implements ResizeHandler{
 									new ContentQuestion("Description?"),
 									new WhenQuestion("Quand?"),
 									new ContentQuestion("Nom du lieu?"),
-									new WhereQuestion("Où ça sur la carte?")
+									new WhereQuestion("Sur la carte?")
 							);
-							
 							QPanel tested = new QPanel(q);
 							//tested.setSize("50%", "50%");
+							q.answerChannel().registerHandler(new WHandler<Map<String,String>>(){
+								@Override
+								public void onEvent(
+										WEvent<Map<String, String>> elt) {
+									Map<String,String> map = elt.getElement();
+									Window.alert("Questionnaire are  "+ elt.getElement().toString());
+									String[] coord = map.get("Sur la carte?").split("\\|");
+									Window.alert("Questionnaire are  "+ elt.getElement().toString()+" "+Arrays.toString(coord));
+									LatLng ll = LatLng.newInstance(
+											Double.parseDouble(coord[0]), 
+											Double.parseDouble(coord[1]));//;
+									Date d = new Date(Date.parse(map.get("Quand?")));
+									GeoStoryItem geo = new GeoStoryItem(
+											new Interval(d,d),
+											map.get("Nom du lieu?"),
+											ll,
+											map.get("Description?"));
+									types.itemAdded.shareEvent(geo);
+									types.centerEvent.shareEvent(null);
+								}});
 							tested.center();tested.show();
 						}});
 					controls.add(addOne);

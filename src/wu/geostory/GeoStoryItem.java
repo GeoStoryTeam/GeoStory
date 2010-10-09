@@ -37,7 +37,7 @@ public class GeoStoryItem implements Comparable<GeoStoryItem>, Serializable {
 	}
 
 	public String toString(){
-		return place.toString()+" @ "+period;
+		return this.place.toString()+" @ "+this.period+";"+this.description+";"+this.point;
 	}
 
 	@Override

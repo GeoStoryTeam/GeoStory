@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
-public class WhenQuestion extends Question<Date>{
+public class WhenQuestion extends Question<String>{
 
 	public WhenQuestion(String in) {
 		super(in);
@@ -19,11 +19,9 @@ public class WhenQuestion extends Question<Date>{
 		HorizontalPanel panel = new HorizontalPanel();
 		DatePicker a = new DatePicker();
 		a.addValueChangeHandler(new ValueChangeHandler<Date>(){
-
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
-				// TODO Auto-generated method stub
-				answerChannel().shareEvent(event.getValue());
+				answerChannel().shareEvent(event.getValue().toGMTString());
 			}});
 		panel.add(a);
 		return panel;

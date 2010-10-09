@@ -33,9 +33,9 @@ public class PlaceEditor extends Composite{
 
 	Marker marker;
 	
-	WEventType<LatLng> answerChannel;
+	WEventType<String> answerChannel;
 
-	public PlaceEditor(WEventType<LatLng> wEventType){
+	public PlaceEditor(WEventType<String> wEventType){
 		this.answerChannel = wEventType;
 		LatLng mtl = LatLng.newInstance(45.44,-73.6);
 		map = new MapWidget(mtl, 4);
@@ -59,7 +59,7 @@ public class PlaceEditor extends Composite{
 						map.removeOverlay(event.getSender());
 					}});
 				map.addOverlay(marker);
-				answerChannel.shareEvent(marker.getLatLng());
+				answerChannel.shareEvent(marker.getLatLng().getLatitude()+"|"+marker.getLatLng().getLongitude());
 			}
 		});
 		// add a filed to place the point thanks to the Geocoder (easiest way to get right on the point)

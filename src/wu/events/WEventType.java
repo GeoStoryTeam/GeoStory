@@ -14,6 +14,10 @@ import com.google.gwt.event.shared.GwtEvent.Type;
  * 
  * Then the type acts as a factory to build events or as a type holder for handler registration.
  * 
+ * TODO 
+ * - make a great event log that gives the events and their timestamps.
+ * - try to know if an event is shared within a register to build a dependancy graph.
+ * 
  * @author joris
  *
  * @param <Element>
@@ -44,6 +48,9 @@ public class WEventType<Element> {
 	}
 	
 	public void shareEvent(Element elt){
+		// TODO find a transparent way to record what triggered this event
+		// - shareEvent(Element et, WEvent trigger)
+		// - does reflexion allows to see the stack (the calling method would be a onEvent from WHandler)
 		bus.fireEvent(this.buildEvent(elt));
 	}
 	
