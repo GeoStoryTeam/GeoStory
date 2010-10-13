@@ -1,8 +1,5 @@
 package wu.questions;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import wu.events.WEventType;
 
 import com.google.gwt.maps.client.MapWidget;
@@ -10,10 +7,6 @@ import com.google.gwt.maps.client.control.MapTypeControl;
 import com.google.gwt.maps.client.control.SmallMapControl;
 import com.google.gwt.maps.client.event.MapClickHandler;
 import com.google.gwt.maps.client.event.MarkerClickHandler;
-import com.google.gwt.maps.client.event.MarkerDragEndHandler;
-import com.google.gwt.maps.client.event.MapClickHandler.MapClickEvent;
-import com.google.gwt.maps.client.event.MarkerClickHandler.MarkerClickEvent;
-import com.google.gwt.maps.client.event.MarkerDragEndHandler.MarkerDragEndEvent;
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.overlay.Icon;
@@ -59,6 +52,7 @@ public class PlaceEditor extends Composite{
 						map.removeOverlay(event.getSender());
 					}});
 				map.addOverlay(marker);
+				map.checkResizeAndCenter();
 				answerChannel.shareEvent(marker.getLatLng().getLatitude()+"|"+marker.getLatLng().getLongitude());
 			}
 		});
@@ -69,7 +63,8 @@ public class PlaceEditor extends Composite{
 				map.checkResizeAndCenter();
 			}
 		};
-		resize.schedule(10);
+		resize.schedule(1);
+		map.checkResizeAndCenter();
 		this.initWidget(map);
 	}
 

@@ -128,16 +128,13 @@ HasDoubleClickHandlers{
 		largePanel.add(canvas);
 		overlays = new HashMap<GeoStoryItem,Widget>();
 		labels = new HashSet<Widget>();
-
 		if (middleDebug){
 			middle = new Line();
 			anchorPanel.add(middle);
 			middle2 = new Line();
 			anchorPanel.add(middle2);
 		}
-
 		this.center = center;
-
 		Window.addResizeHandler(this);
 		this.addMouseDownHandler(this);
 		this.addMouseUpHandler(this);
@@ -208,7 +205,6 @@ HasDoubleClickHandlers{
 	public void onMouseOut(MouseOutEvent event) {
 		//this.onMouseUp(null);
 	}
-
 
 	public void onMouseMove(MouseMoveEvent event) {
 		if (isDragging()){

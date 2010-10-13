@@ -67,26 +67,26 @@ public class GeoStory extends Composite implements ResizeHandler{
 	Space space;
 
 	// The model with things related to position and dates
-	GeoStoryModel pad;
+	GeoStoryModel model;
 
 	VerticalPanel controls;
 
 	public GeoStory(){
 		panel = new SplitLayoutPanel();
 		types = new GeoEventTypes();
-		pad = new GeoStoryModel(types);
+		model = new GeoStoryModel(types);
 		//pad.populateRandomly(10);
 		{
 			{
-				space = new Space(LatLng.newInstance(45.50,-73.60),4, types, pad);
+				space = new Space(LatLng.newInstance(45.50,-73.60),4, types, model);
 			}
 			{
-				time = new TimeLine(pad, types);
+				time = new TimeLine(model, types);
 			}
 			{
 				list = new ListBox(true);
 				list.setVisibleItemCount(20);
-				for (GeoStoryItem i : pad.getItems()){
+				for (GeoStoryItem i : model.getItems()){
 					list.addItem(i.toString());
 				}
 				//time.setSize("100%", "100%");
@@ -112,13 +112,26 @@ public class GeoStory extends Composite implements ResizeHandler{
 					controls.add(getFromServer);
 				}
 				{
+					Button dump = new Button("Text dump");
+					dump.addClickHandler(new ClickHandler(){
+						@Override
+						public void onClick(ClickEvent event) {
+							StringBuilder sb = new StringBuilder();
+							for (GeoStoryItem item : model.getItems()){
+								sb.append(item.toJSON()+"\n");
+							}
+							Window.alert(sb.toString());
+						}});
+					controls.add(dump);
+				}
+				{
 					Button popRandom = new Button("Populate at random");
 					controls.add(popRandom);
 					popRandom.addClickHandler(new ClickHandler(){
 
 						@Override
 						public void onClick(ClickEvent event) {
-							pad.populateRandomly(10);
+							model.populateRandomly(10);
 							types.centerEvent.shareEvent(null);
 						}
 					});
@@ -222,7 +235,7 @@ public class GeoStory extends Composite implements ResizeHandler{
 					reset.addClickHandler(new ClickHandler(){
 						@Override
 						public void onClick(ClickEvent event) {
-							pad.reset();
+							model.reset();
 							types.centerEvent.shareEvent(null);
 						}});
 					controls.add(reset);

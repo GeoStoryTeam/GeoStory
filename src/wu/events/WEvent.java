@@ -4,9 +4,10 @@ import com.google.gwt.event.shared.GwtEvent;
 
 /**
  * This is a wrapper class to deal with events whose type is objectified.
- * @author joris
+ * These events are not directly instantiated but are created by the event type.
+ * @author joris deguet
  *
- * @param <Element>
+ * @param <Element> describes the class of the attachment for th
  */
 public class WEvent<Element> extends GwtEvent<WHandler<Element>>{
 
@@ -14,8 +15,17 @@ public class WEvent<Element> extends GwtEvent<WHandler<Element>>{
 	
 	public Type<WHandler<Element>> typ;
 	
-	public WEvent(Element elt, Type<WHandler<Element>> t){element = elt;this.typ = t;}
+	/**
+	 * You cannot instantiate events directly, this is done through the WEventType.
+	 * @param elt
+	 * @param t
+	 */
+	protected WEvent(Element elt, Type<WHandler<Element>> t){element = elt;this.typ = t;}
 	
+	/**
+	 * Returns the attachment for this event.
+	 * @return
+	 */
 	public Element getElement(){
 		return this.element;
 	}
