@@ -3,8 +3,6 @@ package wu.geostory;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.jdo.annotations.PersistenceCapable;
-
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -18,6 +16,16 @@ import com.google.gwt.maps.client.geom.LatLng;
  */
 
 public class GeoStoryItem implements Comparable<GeoStoryItem>, Serializable {
+	
+	boolean isVisible = true; // visible by default
+	
+	public boolean isVisible() {
+		return isVisible;
+	}
+
+	public void setVisible(boolean isVisible) {
+		this.isVisible = isVisible;
+	}
 
 	Interval period;
 
