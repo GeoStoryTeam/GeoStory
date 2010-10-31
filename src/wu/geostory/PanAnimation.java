@@ -12,7 +12,7 @@ public class PanAnimation extends Animation{
 	
 	Band band;
 	
-	public PanAnimation(Date start, Date end, Band b, Res res, int width, int panelOffset){
+	public PanAnimation(Date start, Date end, Band b, Resolution res, int width, int panelOffset){
 		super();
 		this.end = res.dateToPixel(end, width, start) - res.dateToPixel(start, width, start);
 		this.endDate = end;

@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class QPanel extends DialogBox{
 
-	StackLayoutPanel pan;
+	MyStackLayoutPanel pan;
 
 	final Questionnaire questionnaire;
 
@@ -76,7 +76,7 @@ public class QPanel extends DialogBox{
 				reset.getElement().getStyle().setBackgroundColor("green");
 			}
 		}
-		pan = new StackLayoutPanel(Unit.EM);
+		pan = new MyStackLayoutPanel(Unit.EM);
 		wrapper.add(pan);
 		for (final Question<String> question : q.questions){
 			Widget typeDependant = question.answerPan();
@@ -88,6 +88,11 @@ public class QPanel extends DialogBox{
 					if (elt.getElement() != null) {
 						answers.put(question.intitule, elt.getElement());
 						header.getElement().getStyle().setColor("green");
+						validate();
+					}
+					else{
+						answers.remove(question.intitule);
+						header.getElement().getStyle().setColor("red");
 						validate();
 					}
 				}
@@ -107,7 +112,7 @@ public class QPanel extends DialogBox{
 
 	static Questionnaire buildTestQuestionnaire(){
 		Questionnaire q = new Questionnaire(
-				new WhereQuestion("Where this event happens?"),
+				new WhereQuestion("Where this event happens?",null),
 				new WhenQuestion("When this events happens?"),
 				//new WhichQuestion<String>("What is this event's category?","home","family","hobbies","work"),
 				new OrderQuestion<String>("order","a","b","c","d","e"),

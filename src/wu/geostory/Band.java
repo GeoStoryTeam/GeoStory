@@ -81,7 +81,7 @@ HasDoubleClickHandlers{
 
 	GWTCanvas canvas;						// canvas use to draw the backgroud of the band
 
-	Res resolution;					// the resolution of the band that provides bijection between pixel positions and dates
+	Resolution resolution;					// the resolution of the band that provides bijection between pixel positions and dates
 	Date center;							// the date at the center of the band
 
 	Integer dragStart = null;				// all info to keep info about the drag 
@@ -112,7 +112,7 @@ HasDoubleClickHandlers{
 	public Band(
 			TimeLine tl,
 			GeoStoryModel model,
-			Res res, 
+			Resolution res, 
 			Date center, 
 			GeoEventTypes types){
 		main = false;
@@ -168,7 +168,7 @@ HasDoubleClickHandlers{
 		this.completePaint();
 	}
 
-	public void setResolution(Res r){this.resolution = r;}
+	public void setResolution(Resolution r){this.resolution = r;}
 
 	public void setMain(){
 		main = true;
@@ -278,7 +278,7 @@ HasDoubleClickHandlers{
 		anim.run(1500);
 	}
 
-	public void shiftBand(int offset, Res otherRes){
+	public void shiftBand(int offset, Resolution otherRes){
 		int localOffset = (int)(0.0+offset*otherRes.secondsPerPixel/resolution.secondsPerPixel);
 		if (localOffset < width()){ // TODO make this test work
 			shiftBy(localOffset);

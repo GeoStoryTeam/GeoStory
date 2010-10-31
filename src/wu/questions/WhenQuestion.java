@@ -18,7 +18,9 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 
 public class WhenQuestion extends Question<String>{
 
-	Date current;
+	Date startDate;
+	Date endDate;
+	public static final DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd");
 	
 	public WhenQuestion(String in) {
 		super(in);
@@ -27,21 +29,20 @@ public class WhenQuestion extends Question<String>{
 	@Override
 	public Widget answerPan() {
 		FlexTable panel = new FlexTable();
-		final DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy");
-		
-		current = new Date();
+		startDate = new Date();
+		endDate   = new Date();
 		
 		Label start = new Label("Start");
 		panel.setWidget(0, 0, start);
 		
-		DateBox box = new DateBox();
-		box.addValueChangeHandler(new ValueChangeHandler<Date>(){
+		DateBox startbox = new DateBox();
+		startbox.addValueChangeHandler(new ValueChangeHandler<Date>(){
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
-				current = event.getValue();
+				startDate = event.getValue();
 				share();
 			}});
-		box.setFormat(new DateBox.Format(){
+		startbox.setFormat(new DateBox.Format(){
 			DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd");
 			@Override
 			public String format(DateBox dateBox, Date date) {
@@ -53,12 +54,37 @@ public class WhenQuestion extends Question<String>{
 			}
 			@Override
 			public void reset(DateBox dateBox, boolean abandon) {}});
-		panel.setWidget(0, 1, box);
+		panel.setWidget(0, 1, startbox);
+		
+		
+		Label end = new Label("End");
+		panel.setWidget(1, 0, end);
+		
+		DateBox endbox = new DateBox();
+		endbox.addValueChangeHandler(new ValueChangeHandler<Date>(){
+			@Override
+			public void onValueChange(ValueChangeEvent<Date> event) {
+				endDate = event.getValue();
+				share();
+			}});
+		endbox.setFormat(new DateBox.Format(){
+			DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd");
+			@Override
+			public String format(DateBox dateBox, Date date) {
+				return dtf.format(date!=null?date:new Date());
+			}
+			@Override
+			public Date parse(DateBox dateBox, String text, boolean reportError) {
+				return dtf.parse(text);
+			}
+			@Override
+			public void reset(DateBox dateBox, boolean abandon) {}});
+		panel.setWidget(1, 1, endbox);
 		return panel;
 	}
 	
 	private void share(){
-		answerChannel().shareEvent(current.toGMTString());
+		answerChannel().shareEvent(dtf.format(startDate)+"->"+dtf.format(endDate));
 	}
 	
 	

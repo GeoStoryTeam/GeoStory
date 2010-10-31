@@ -2,7 +2,7 @@ package wu.geostory;
 
 import java.util.Date;
 
-public class ResHour extends Res{
+public class ResHour extends Resolution{
 
 	int numberOfHours;
 	

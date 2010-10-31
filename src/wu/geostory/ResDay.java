@@ -2,7 +2,7 @@ package wu.geostory;
 
 import java.util.Date;
 
-public class ResDay extends Res{
+public class ResDay extends Resolution{
 
 	final int numberOfDays;
 	

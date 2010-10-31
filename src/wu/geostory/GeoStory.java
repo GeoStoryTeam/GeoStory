@@ -198,11 +198,15 @@ public class GeoStory extends Composite implements ResizeHandler{
 					addOne.addClickHandler(new ClickHandler(){
 						@Override
 						public void onClick(ClickEvent event) {
+							ContentQuestion desc = new ContentQuestion("Description?");
+							WhenQuestion    when = new WhenQuestion("Quand?");
+							ContentQuestion plac = new ContentQuestion("Nom du lieu?");
+							WhereQuestion   wher = new WhereQuestion("Sur la carte?",plac.answerChannel());
 							Questionnaire q = new Questionnaire(
-									new ContentQuestion("Description?"),
-									new WhenQuestion("Quand?"),
-									new ContentQuestion("Nom du lieu?"),
-									new WhereQuestion("Sur la carte?")
+									desc,
+									when,
+									plac,
+									wher
 							);
 							QPanel tested = new QPanel(q);
 							//tested.setSize("50%", "50%");
@@ -217,12 +221,16 @@ public class GeoStory extends Composite implements ResizeHandler{
 									LatLng ll = LatLng.newInstance(
 											Double.parseDouble(coord[0]), 
 											Double.parseDouble(coord[1]));//;
-									Date d = new Date(Date.parse(map.get("Quand?")));
+									String[] dates = map.get("Quand?").split("->");
+									Interval interval = new Interval(
+											WhenQuestion.dtf.parse(dates[0]),
+											WhenQuestion.dtf.parse(dates[1]));
 									GeoStoryItem geo = new GeoStoryItem(
-											new Interval(d,d),
+											interval,
 											map.get("Nom du lieu?"),
 											ll,
 											map.get("Description?"));
+									Window.alert("GeoStory "+geo+" "+Arrays.toString(dates)+" "+map.get("Quand?"));
 									types.itemAdded.shareEvent(geo);
 									types.centerEvent.shareEvent(null);
 								}});
@@ -288,7 +296,7 @@ public class GeoStory extends Composite implements ResizeHandler{
 						@Override
 						public void onSuccess(LatLng point) {
 							GeoStoryItem gsi = new GeoStoryItem(event.get2(),event.get1(),point,event.get3());
-							//System.out.println("Item is "+gsi);
+							Window.alert("Item is "+gsi);
 							types.itemAdded.shareEvent(gsi);
 							types.centerEvent.shareEvent(null);
 						}

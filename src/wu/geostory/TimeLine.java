@@ -53,7 +53,7 @@ HasKeyPressHandlers, KeyPressHandler
 	GeoStoryModel model;
 
 	// the different zoom level we can move within actually we use Couple
-	Res[] zoomLevels = new Res[]{
+	Resolution[] zoomLevels = new Resolution[]{
 			new ResHour(1),
 			new ResHour(6),
 			new ResHour(12),
@@ -144,7 +144,7 @@ HasKeyPressHandlers, KeyPressHandler
 	}
 
 	// called by one band to refresh all bands
-	public void refresh(Band emitter, int pixel, Res originResolution){
+	public void refresh(Band emitter, int pixel, Resolution originResolution){
 		for (Band b : bands.keySet()){
 			if (b!= emitter){
 				b.shiftBand(pixel,originResolution);

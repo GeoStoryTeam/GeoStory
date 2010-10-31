@@ -2,7 +2,7 @@ package wu.geostory;
 
 import java.util.Date;
 
-public class ResYear extends Res{
+public class ResYear extends Resolution{
 
 	int numberOfYears;
 	

@@ -2,7 +2,7 @@ package wu.geostory;
 
 import java.util.Date;
 
-public class ResMonth extends Res{
+public class ResMonth extends Resolution{
 
 	int numberOfMonths;
 	
