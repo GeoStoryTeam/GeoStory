@@ -9,7 +9,6 @@ import com.google.gwt.maps.client.MapType;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.control.LargeMapControl;
 import com.google.gwt.maps.client.control.MapTypeControl;
-import com.google.gwt.maps.client.control.SmallMapControl;
 import com.google.gwt.maps.client.event.MapMoveHandler;
 import com.google.gwt.maps.client.event.MarkerClickHandler;
 import com.google.gwt.maps.client.geom.LatLng;
@@ -86,6 +85,14 @@ public class Space extends Composite{
 				space.addOverlay(m);
 				polygons.put(item,m);
 				markers.put(item, m);
+			} 
+			else {
+				Marker m = markers.get(item);
+				if (!item.isVisible()) {
+					m.setVisible(false);
+				} else {
+					m.setVisible(true);
+				}
 			}
 		}
 	}

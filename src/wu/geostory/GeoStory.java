@@ -1,29 +1,25 @@
 package wu.geostory;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import wu.events.WHandler;
 import wu.events.WEvent;
+import wu.events.WHandler;
 import wu.questions.ContentQuestion;
-import wu.questions.OrderQuestion;
 import wu.questions.QPanel;
 import wu.questions.Question;
 import wu.questions.Questionnaire;
 import wu.questions.WhenQuestion;
 import wu.questions.WhereQuestion;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.shared.HandlerManager;
-
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geocode.LatLngCallback;
 import com.google.gwt.maps.client.geom.LatLng;
@@ -249,9 +245,41 @@ public class GeoStory extends Composite implements ResizeHandler{
 					controls.add(reset);
 				}
 				{
-					TextBox search = new TextBox();
+					final TextBox search = new TextBox();
 					search.setTitle("Search");
+					final Button go = new Button("go");
+					go.addClickHandler(new ClickHandler(){
+						@Override
+						public void onClick(ClickEvent event) {
+							Set<GeoStoryItem> itemsSet = pad.getItems();
+							// filtering
+							if (search.getText() != null && !search.getText().isEmpty()) {
+								for (GeoStoryItem geoStoryItem : itemsSet) {
+									if (geoStoryItem.getDescription().contains(search.getText())) {
+										geoStoryItem.setVisible(true);
+									} else {
+										geoStoryItem.setVisible(false);
+									}
+								}
+							}
+							types.centerEvent.shareEvent(null);
+						}});
+					controls.add(go);
 					controls.add(search);
+				}
+				{
+					final Button removeFilter = new Button("remove filter");
+					removeFilter.addClickHandler(new ClickHandler(){
+						@Override
+						public void onClick(ClickEvent event) {
+							Set<GeoStoryItem> itemsSet = pad.getItems();
+							// filtering
+							for (GeoStoryItem geoStoryItem : itemsSet) {
+								geoStoryItem.setVisible(true);
+							}
+							types.centerEvent.shareEvent(null);
+						}});
+					controls.add(removeFilter);
 				}
 			}
 			panel.addSouth(time,150);
