@@ -367,7 +367,7 @@ HasDoubleClickHandlers{
 			int lineHeight = (int) ((height - 20) / this.model.numberOfLines() );
 			for(GeoStoryItem event : model.getItems()){
 				Button widg = model.widgetFor(event); // TODO should recover it
-				if (event.period.overlaps(this.getDragInterval())){
+				if (event.period.overlaps(this.getDragInterval()) && event.isVisible){
 					Date start = event.period.getA();
 					Date end = event.period.getB();
 					Integer startPixel = resolution.dateToPixel(start, width, center)+widthByFactor;
