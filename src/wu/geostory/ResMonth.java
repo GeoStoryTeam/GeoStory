@@ -7,7 +7,7 @@ public class ResMonth extends Resolution{
 	int numberOfMonths;
 	
 	public ResMonth(int n) {
-		super(n*36000*24*30);
+		super(n*1000*24*30);
 		this.numberOfMonths = n;
 	}
 

@@ -81,7 +81,7 @@ public class PlaceEditor extends Composite{
 				map.checkResizeAndCenter();
 			}
 		};
-		resize.schedule(1);
+		//resize.schedule(1);
 		map.checkResizeAndCenter();
 		this.initWidget(map);
 	}

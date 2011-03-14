@@ -9,8 +9,9 @@ import java.util.Set;
 import wu.events.WEvent;
 import wu.events.WHandler;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.canvas.dom.client.Context2d;
+import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -20,7 +21,6 @@ import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
 import com.google.gwt.event.dom.client.HasMouseMoveHandlers;
 import com.google.gwt.event.dom.client.HasMouseUpHandlers;
-import com.google.gwt.event.dom.client.HasMouseWheelHandlers;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -39,7 +39,6 @@ import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.maps.client.geom.LatLngBounds;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -48,12 +47,11 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.widgetideas.graphics.client.Color;
-import com.google.gwt.widgetideas.graphics.client.GWTCanvas;
 
 /**
  * TODO:
  * - when putting the middleLines button that are at the right of the lines cannot be clicked anymore see middleDebug
+ * - Remove the GWTCanvas dependency
  * 
  * @author joris
  *
@@ -79,7 +77,7 @@ HasDoubleClickHandlers{
 	int height;
 	int widthByFactor;
 
-	GWTCanvas canvas;						// canvas use to draw the backgroud of the band
+	Canvas canvas;						// canvas use to draw the backgroud of the band
 
 	Resolution resolution;					// the resolution of the band that provides bijection between pixel positions and dates
 	Date center;							// the date at the center of the band
@@ -96,9 +94,10 @@ HasDoubleClickHandlers{
 
 	//boolean divLevel = false;
 
-	Color background = new Color(255,250,244);
-	Color separator = new Color(30,40,80);
-	Color nowLine = new Color(150,230,120);
+	final CssColor background = CssColor.make("rgba(255,250,244,0.5)");
+	final CssColor separator = CssColor.make("rgba(30,40,80,0.5)");
+	final CssColor nowLine = CssColor.make("rgba(150,230,120,0.5)");
+	 
 	// Used to limit the number of event we want to use when changing the center of the timeline
 	// so see if performance gets better.
 	TimeLine line;
@@ -123,8 +122,10 @@ HasDoubleClickHandlers{
 		this.resolution = res;
 		largePanel = new AbsolutePanel();
 		anchorPanel.add(largePanel);
-		canvas = new GWTCanvas(1000,1000);
-		canvas.setBackgroundColor(background);
+		canvas = Canvas.createIfSupported();
+		canvas.setHeight("1000px");
+		canvas.setWidth("1000px");
+		//canvas.setBackgroundColor(background);
 		largePanel.add(canvas);
 		overlays = new HashMap<GeoStoryItem,Widget>();
 		labels = new HashSet<Widget>();
@@ -159,7 +160,6 @@ HasDoubleClickHandlers{
 				//Window.alert("Map view has changed " +elt.getElement());
 			}});
 		types.itemSelected.registerHandler(new WHandler<GeoStoryItem>(){
-			@Override
 			public void onEvent(WEvent<GeoStoryItem> elt) {
 				panTo(elt.getElement().period.getA());
 				highlight(elt.getElement());
@@ -243,11 +243,18 @@ HasDoubleClickHandlers{
 			t.schedule(10);
 	}
 
+	private void resize(Canvas c, int w, int h){
+		c.setWidth(w + "px");
+	    c.setHeight(h + "px");
+	    c.setCoordinateSpaceWidth(w);
+	    c.setCoordinateSpaceHeight(h);
+	}
+	
 	public void onResize(ResizeEvent event) {
 		width = width();
 		height = height();
 		widthByFactor = factor*width;
-		canvas.resize(width()*(2*factor+1),  height());
+		resize(canvas, width()*(2*factor+1),  height());
 		//if (divLevel){largePanel.getElement().getStyle().setPropertyPx("left",-width());}
 		anchorPanel.setWidgetPosition(largePanel, -widthByFactor, 0);
 		// deal with the middle not moving line
@@ -269,7 +276,7 @@ HasDoubleClickHandlers{
 		}
 		drawThings(largePanel, canvas,center);
 		drawDateLabels(largePanel);
-		drawBars(largePanel,canvas,overlays);
+		drawBars(largePanel,overlays);
 	}
 
 	public void panTo(Date d){
@@ -279,20 +286,14 @@ HasDoubleClickHandlers{
 	}
 
 	public void shiftBand(int offset, Resolution otherRes){
-		int localOffset = (int)(0.0+offset*otherRes.secondsPerPixel/resolution.secondsPerPixel);
+		int localOffset = (int)(0.0+offset*otherRes.minutesPerPixel/resolution.minutesPerPixel);
 		if (localOffset < width()){ // TODO make this test work
 			shiftBy(localOffset);
-		}
-		else{
-			//TODO what to do in that case?
-
 		}
 	}
 
 	public void refresh(Date d){
-		if (d != null && !center.equals(d)) {
-			center = d;
-		}
+		if (d != null && !center.equals(d)) {center = d;}
 		completePaint();
 	}
 
@@ -304,45 +305,41 @@ HasDoubleClickHandlers{
 		return anchorPanel.getOffsetHeight();
 	}
 
-	private void drawThings(AbsolutePanel pan, GWTCanvas canv, Date date){
-		canv.clear();
+	private void drawThings(AbsolutePanel pan, Canvas canv, Date date){
+		Context2d c = canv.getContext2d();
+		c.clearRect(0, 0, canv.getCoordinateSpaceWidth(), canv.getCoordinateSpaceHeight());
 		// Displays the limited part of the interval as a lighter rectangle
 		if (!this.main && this.line.getBounds() != null){
 			Interval inter = this.line.getBounds();
-			canv.setFillStyle(Color.LIGHTGREY);
+			c.setFillStyle(background.value());
 			int a = this.resolution.dateToPixel(inter.getA(), width(), center);
 			int b = this.resolution.dateToPixel(inter.getB(), width(), center);
-			canv.fillRect(a+widthByFactor, 2, b-a, height()-2);
+			c.fillRect(a+widthByFactor, 2, b-a, height()-2);
 		}
-
 		for (Map.Entry<Integer, Date> marker : markers().entrySet()){
-			canv.setLineWidth(1);
-			canv.setStrokeStyle(this.separator);
-			canv.beginPath();
-			canv.moveTo(marker.getKey()+widthByFactor, 0);
-			canv.lineTo(marker.getKey()+widthByFactor, height());
-			canv.closePath();
-			canv.stroke();
+			c.setLineWidth(1);
+			c.setStrokeStyle(this.separator);
+			c.beginPath();
+			c.moveTo(marker.getKey()+widthByFactor, 0);
+			c.lineTo(marker.getKey()+widthByFactor, height());
+			c.closePath();
+			c.stroke();
 		}
-
 		// the green line to show where is now
 		int nowPosition = resolution.dateToPixel(new Date(), width, date)+widthByFactor;
-		canv.setLineWidth(5);
-		canv.setStrokeStyle(this.nowLine);
-		canv.beginPath();
-		canv.moveTo(nowPosition, 3);
-		canv.lineTo(nowPosition, height()-3);
-		canv.closePath();
-		canv.stroke();
+		c.setLineWidth(5);
+		c.setStrokeStyle(this.nowLine);
+		c.beginPath();
+		c.moveTo(nowPosition, 3);
+		c.lineTo(nowPosition, height()-3);
+		c.closePath();
+		c.stroke();
 	}
 
 	private void drawDateLabels(AbsolutePanel pan){
 		// Markers 
 		for (Widget existing : labels){
-			//if (!this.getDisplayedInterval().contains(date)){
 			pan.remove(existing);
-			//labels.remove(date);
-			//}
 		}
 		labels.clear();
 		for (final Map.Entry<Integer, Date> marker : markers().entrySet()){
@@ -357,7 +354,7 @@ HasDoubleClickHandlers{
 		}
 	}
 
-	private void drawBars(AbsolutePanel pan, GWTCanvas canv,Map<GeoStoryItem,Widget> over){
+	private void drawBars(AbsolutePanel pan, Map<GeoStoryItem,Widget> over){
 		//lines.linesForInterval(this.getDisplayedInterval());
 		if (main && this.model.numberOfLines() > 0){
 			int lineHeight = (int) ((height - 20) / this.model.numberOfLines() );
@@ -382,9 +379,7 @@ HasDoubleClickHandlers{
 					else{
 						pan.setWidgetPosition(widg, left, top);
 						widg.setHeight(lineHeight-4+"px");
-						//System.out.println("                  existing");
 					}
-					//if (event.equals(selected)) {highlight(widg);}
 				}
 				else{
 					pan.remove(widg);

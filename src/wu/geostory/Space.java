@@ -1,7 +1,11 @@
 package wu.geostory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import wu.events.WEvent;
+import wu.events.WHandler;
 
 import com.google.gwt.maps.client.InfoWindow;
 import com.google.gwt.maps.client.InfoWindowContent;
@@ -19,16 +23,16 @@ import com.google.gwt.user.client.ui.HTML;
 
 public class Space extends Composite{
 
-	MapWidget space;
+	final MapWidget space;
 
-	Map<GeoStoryItem,Marker> markers;
-	Map<GeoStoryItem,Marker> polygons;
+	final Map<GeoStoryItem,Marker> markers;
+	final Map<GeoStoryItem,Marker> polygons;
 
 	final GeoStoryModel model;
-	
+
 	final GeoEventTypes types;
 
-	public Space(LatLng point, int zoom, GeoEventTypes typ, GeoStoryModel mod){
+	public Space(final LatLng point, final int zoom, final GeoEventTypes typ, final GeoStoryModel mod){
 		space = new MapWidget(point,zoom);
 		space.setCenter(point, zoom, MapType.getSatelliteMap());
 		this.types = typ;
@@ -36,28 +40,30 @@ public class Space extends Composite{
 		space.setScrollWheelZoomEnabled(true);
 		space.addControl(new MapTypeControl());
 		space.addControl(new LargeMapControl());
-		
 		space.addMapType(MapType.getSatelliteMap());
-		
-		markers = new HashMap<GeoStoryItem,Marker>();
-		polygons = new HashMap<GeoStoryItem,Marker>();
-		
 		space.addMapMoveHandler(new MapMoveHandler(){
 			public void onMove(MapMoveEvent event) {
 				types.mapViewChanged.shareEvent(space.getBounds());
 			}});
+		markers = new HashMap<GeoStoryItem,Marker>();
+		polygons = new HashMap<GeoStoryItem,Marker>();
 		this.initWidget(space);
+		// Reacts to new item selection
+		types.itemSelected.registerHandler(new WHandler<GeoStoryItem>(){
+			public void onEvent(WEvent<GeoStoryItem> elt) {
+				centerOnItem(elt.getElement());
+			}});
+		types.centerEvent.registerHandler(new WHandler<Date>(){
+			public void onEvent(WEvent<Date> elt) {
+				drawSpace();
+			}});
 	}
 
-	public void addOverlay(Marker m) {this.space.addOverlay(m);}
-
+	
 	public void drawSpace(){
-		// TODO the remove phase 
-		//space.clearOverlays();
+		// remove the items that are not in the model
 		for (GeoStoryItem i : markers.keySet()){
-			if (!model.getItems().contains(i)){
-				space.removeOverlay(markers.get(i));
-			}
+			if (!model.getItems().contains(i)){space.removeOverlay(markers.get(i));}
 		}
 		for (final GeoStoryItem item : model.getItems()){
 			if (!markers.containsKey(item)){
@@ -88,33 +94,30 @@ public class Space extends Composite{
 			} 
 			else {
 				Marker m = markers.get(item);
-				if (!item.isVisible()) {
-					m.setVisible(false);
-				} else {
-					m.setVisible(true);
-				}
+				if (!item.isVisible()) {m.setVisible(false);} 
+				else {m.setVisible(true);}
 			}
 		}
 	}
 
-	public void centerOnItem(GeoStoryItem item){
+	public void centerOnItem(final GeoStoryItem item){
 		if (!item.place.equals(space.getCenter())){
 			// handle the info window on the map
-			InfoWindow existing = space.getInfoWindow();
-			if (existing != null) existing.close();
+			InfoWindow iw = space.getInfoWindow();
+			if (iw != null) iw.close();
 			InfoWindowContent iwc = new InfoWindowContent(new HTML(
 					item.description.toString()+"<br/>"+
 					item.place+"<br/>"+
 					item.point+"<br/>"+
 					item.period+"<br/>"+
 					model.colors.get(item)+"<br/>"
-					));
-			existing.open(markers.get(item), iwc);
+			));
+			iw.open(markers.get(item), iwc);
 			// center the map on the item to show
 			space.panTo(item.point);
 		}
 	}
-	
+
 	public void checkResizeAndCenter() {
 		this.space.checkResizeAndCenter();		
 	}

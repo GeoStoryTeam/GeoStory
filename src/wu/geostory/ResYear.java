@@ -7,7 +7,7 @@ public class ResYear extends Resolution{
 	int numberOfYears;
 	
 	public ResYear(int n) {
-		super(n*24*36000*365);
+		super(n*24*1000*365);
 		this.numberOfYears = n;
 	}
 

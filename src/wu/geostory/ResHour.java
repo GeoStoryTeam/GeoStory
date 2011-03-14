@@ -7,7 +7,7 @@ public class ResHour extends Resolution{
 	int numberOfHours;
 	
 	public ResHour(int number) {
-		super(number*36000);
+		super(number*1000);
 		this.numberOfHours = number;
 	}
 

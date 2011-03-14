@@ -1,5 +1,6 @@
 package wu.geostory;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,9 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geocode.LatLngCallback;
 import com.google.gwt.maps.client.geom.LatLng;
@@ -28,8 +32,10 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -43,21 +49,17 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  *
  */
 public class GeoStory extends Composite implements ResizeHandler{
-	
-	SplitLayoutPanel panel;
 
-	ListBox list;
+	final SplitLayoutPanel panel;
 
-	TimeLine time;
+	final ListBox list;
+
+	final TimeLine time;
 
 	final TextBox email;
-	
+
 	// Event types
 	GeoEventTypes types;
-
-	public GeoEventTypes getTypes() {
-		return types;
-	}
 
 	// The map thanks to Google
 	Space space;
@@ -71,216 +73,230 @@ public class GeoStory extends Composite implements ResizeHandler{
 		panel = new SplitLayoutPanel();
 		types = new GeoEventTypes();
 		model = new GeoStoryModel(types);
-		//pad.populateRandomly(10);
+		space = new Space(LatLng.newInstance(45.50,-73.60),4, types, model);
+		time  = new TimeLine(model, types);
+		list  = new ListBox(true);
+		list.setVisibleItemCount(20);
+		for (GeoStoryItem i : model.getItems()){
+			list.addItem(i.toString());
+		}
 		{
+			controls = new VerticalPanel();
 			{
-				space = new Space(LatLng.newInstance(45.50,-73.60),4, types, model);
-			}
-			{
-				time = new TimeLine(model, types);
-			}
-			{
-				list = new ListBox(true);
-				list.setVisibleItemCount(20);
-				for (GeoStoryItem i : model.getItems()){
-					list.addItem(i.toString());
-				}
-				//time.setSize("100%", "100%");
-			}
-			{
-				controls = new VerticalPanel();
-				{
-					email = new TextBox();
-					controls.add(email);
-					email.addChangeHandler(new ChangeHandler(){
-						@Override
-						public void onChange(ChangeEvent event) {
-							
-						}});
-				}
-				{
-					Button getFromServer = new Button("Get from server");
-					getFromServer.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							types.getEventFromServer.shareEvent(getEmail());
-						}});
-					controls.add(getFromServer);
-				}
-				{
-					Button dump = new Button("Text dump");
-					dump.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							StringBuilder sb = new StringBuilder();
-							for (GeoStoryItem item : model.getItems()){
-								sb.append(item.toJSON()+"\n");
-							}
-							Window.alert(sb.toString());
-						}});
-					controls.add(dump);
-				}
-				{
-					Button popRandom = new Button("Populate at random");
-					controls.add(popRandom);
-					popRandom.addClickHandler(new ClickHandler(){
+				email = new TextBox();
+				email.setText("joris.deguet@gmail.com");
+				controls.add(email);
+				email.addChangeHandler(new ChangeHandler(){
+					@Override
+					public void onChange(ChangeEvent event) {
 
-						@Override
-						public void onClick(ClickEvent event) {
-							model.populateRandomly(10);
-							types.centerEvent.shareEvent(null);
+					}});
+			}
+			{
+				Button getFromServer = new Button("Get from server");
+				getFromServer.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						types.getEventFromServer.shareEvent(getEmail());
+					}});
+				controls.add(getFromServer);
+			}
+			{
+				Button dump = new Button("Json dump");
+				dump.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						StringBuilder sb = new StringBuilder();
+						for (GeoStoryItem item : model.getItems()){
+							sb.append(item.toJSON()+"\n");
 						}
-					});
-				}
-				{
-					Button popFromText = new Button("Populate from text");
-					controls.add(popFromText);
-					popFromText.addClickHandler(new ClickHandler(){
-
-						@Override
-						public void onClick(ClickEvent event) {
-							// TODO Auto-generated method stub
-							Question<String> q = new ContentQuestion("Description des evenements");
-							final QPanel textContent = new QPanel(new Questionnaire(q));
-							//tested.setSize("50%", "50%");
-							textContent.center();textContent.show();
-							q.answerChannel().registerHandler(new WHandler<String>(){
-								@Override
-								public void onEvent(WEvent<String> elt) {
-									//Window.alert(elt.getElement());
-									List<Triple<String,Interval,String>> res = GeoStoryParser.parse(elt.getElement());
-									int delay = 0;
-									final Geocoder geo = new Geocoder();
-									for (final Triple<String,Interval,String> indiv : res){
-										geodecode(geo, indiv, delay = delay + 100);
-									}	
-									textContent.hide();
-								}});
-						}
-					});
-				}
-				{
-					Button cia = new Button("Draw borders");
-					controls.add(cia);
-					cia.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							for (final Polyline poly : CIA.segments(CIA.northamerica)){
-								//System.out.println(poly);
-								space.space.addOverlay(poly);
-							}
-							for (final Polyline poly : CIA.segments(CIA.europe)){
-								//System.out.println(poly);
-								space.space.addOverlay(poly);
-							}
-						}
-					});
-				}
-				{
-					Button family = new Button("Genealogy info");
-					controls.add(family);
-					family.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							Geocoder geo  = new Geocoder();
-							for (final Triple<String,Interval,String> indiv : Genea.people()){
-									geodecode(geo, indiv, 100);
-							}	
-						}
-					});
-				}
-				{
-					Button addOne = new Button("Add one");
-					addOne.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							ContentQuestion desc = new ContentQuestion("Description?");
-							WhenQuestion    when = new WhenQuestion("Quand?");
-							ContentQuestion plac = new ContentQuestion("Nom du lieu?");
-							WhereQuestion   wher = new WhereQuestion("Sur la carte?",plac.answerChannel());
-							Questionnaire q = new Questionnaire(
-									desc,
-									when,
-									plac,
-									wher
-							);
-							QPanel tested = new QPanel(q);
-							//tested.setSize("50%", "50%");
-							q.answerChannel().registerHandler(new WHandler<Map<String,String>>(){
-								@Override
-								public void onEvent(
-										WEvent<Map<String, String>> elt) {
-									Map<String,String> map = elt.getElement();
-									//Window.alert("Questionnaire are  "+ elt.getElement().toString());
-									String[] coord = map.get("Sur la carte?").split("\\|");
-									//Window.alert("Questionnaire are  "+ elt.getElement().toString()+" "+Arrays.toString(coord));
-									LatLng ll = LatLng.newInstance(
-											Double.parseDouble(coord[0]), 
-											Double.parseDouble(coord[1]));//;
-									String[] dates = map.get("Quand?").split("->");
-									Interval interval = new Interval(
-											WhenQuestion.dtf.parse(dates[0]),
-											WhenQuestion.dtf.parse(dates[1]));
-									GeoStoryItem geo = new GeoStoryItem(
-											interval,
-											map.get("Nom du lieu?"),
-											ll,
-											map.get("Description?"));
-									Window.alert("GeoStory "+geo+" "+Arrays.toString(dates)+" "+map.get("Quand?"));
-									types.itemAdded.shareEvent(geo);
+						DialogBox db = new DialogBox(true);
+						TextArea ta = new TextArea();
+						ta.setEnabled(true);
+						ta.setText(sb.toString());
+						db.add(ta);
+						db.center();db.show();
+					}});
+				controls.add(dump);
+			}
+			{
+				Button jsonload = new Button("Json load");
+				jsonload.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						Question<String> q = new ContentQuestion("Entrer la cha”ne JSON");
+						final QPanel textContent = new QPanel(new Questionnaire(q));
+						textContent.center();textContent.show();
+						q.answerChannel().registerHandler(new WHandler<String>(){
+							@Override
+							public void onEvent(WEvent<String> elt) {
+								String[] lines = elt.getElement().split("\n");
+								for (String item : lines){
+									JSONValue json = JSONParser.parse(item);
+									JSONObject object = json.isObject();
+									GeoStoryItem gsi = GeoStoryItem.fromJSON(object);
+									types.itemAdded.shareEvent(gsi);
 									types.centerEvent.shareEvent(null);
-								}});
-							tested.center();tested.show();
-						}});
-					controls.add(addOne);
-				}
-				{
-					Button reset = new Button("Reset");
-					reset.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							model.reset();
-							types.centerEvent.shareEvent(null);
-						}});
-					controls.add(reset);
-				}
-				{
-					final TextBox search = new TextBox();
-					search.setTitle("Search");
-					final Button go = new Button("go");
-					go.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							Set<GeoStoryItem> itemsSet = pad.getItems();
-							// filtering
-							if (search.getText() != null && !search.getText().isEmpty()) {
-								for (GeoStoryItem geoStoryItem : itemsSet) {
-									if (geoStoryItem.getDescription().contains(search.getText())) {
-										geoStoryItem.setVisible(true);
-									} else {
-										geoStoryItem.setVisible(false);
-									}
+								}
+							}});
+					}
+				});
+				controls.add(jsonload);
+			}
+			{
+				Button popRandom = new Button("Populate at random");
+				controls.add(popRandom);
+				popRandom.addClickHandler(new ClickHandler(){
+
+					@Override
+					public void onClick(ClickEvent event) {
+						model.populateRandomly(10);
+						types.centerEvent.shareEvent(null);
+					}
+				});
+			}
+			{
+				Button popFromText = new Button("Populate from text");
+				controls.add(popFromText);
+				popFromText.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						Question<String> q = new ContentQuestion("Description des evenements");
+						final QPanel textContent = new QPanel(new Questionnaire(q));
+						textContent.center();textContent.show();
+						q.answerChannel().registerHandler(new WHandler<String>(){
+							@Override
+							public void onEvent(WEvent<String> elt) {
+								List<Triple<String,Interval,String>> res = GeoStoryParser.parse(elt.getElement());
+								int delay = 0;
+								final Geocoder geo = new Geocoder();
+								for (final Triple<String,Interval,String> indiv : res){
+									geodecode(geo, indiv, delay = delay + 100);
+								}	
+								textContent.hide();
+							}});
+					}
+				});
+			}
+			{
+				Button cia = new Button("Draw borders");
+				controls.add(cia);
+				cia.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						for (final Polyline poly : CIA.segments(CIA.northamerica)){
+							space.space.addOverlay(poly);
+						}
+						for (final Polyline poly : CIA.segments(CIA.europe)){
+							space.space.addOverlay(poly);
+						}
+					}
+				});
+			}
+			{
+				Button family = new Button("Genealogy info");
+				controls.add(family);
+				family.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						Geocoder geo  = new Geocoder();
+						for (final Triple<String,Interval,String> indiv : Genea.people()){
+							geodecode(geo, indiv, 100);
+						}	
+					}
+				});
+			}
+			{
+				Button addOne = new Button("Add one");
+				addOne.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						ContentQuestion desc = new ContentQuestion("Description?");
+						WhenQuestion    when = new WhenQuestion("Quand?");
+						ContentQuestion plac = new ContentQuestion("Nom du lieu?");
+						WhereQuestion   wher = new WhereQuestion("Sur la carte?",plac.answerChannel());
+						Questionnaire q = new Questionnaire(
+								desc,
+								when,
+								plac,
+								wher
+						);
+						QPanel tested = new QPanel(q);
+						//tested.setSize("50%", "50%");
+						q.answerChannel().registerHandler(new WHandler<Map<String,String>>(){
+							@Override
+							public void onEvent(
+									WEvent<Map<String, String>> elt) {
+								Map<String,String> map = elt.getElement();
+								//Window.alert("Questionnaire are  "+ elt.getElement().toString());
+								String[] coord = map.get("Sur la carte?").split("\\|");
+								//Window.alert("Questionnaire are  "+ elt.getElement().toString()+" "+Arrays.toString(coord));
+								LatLng ll = LatLng.newInstance(
+										Double.parseDouble(coord[0]), 
+										Double.parseDouble(coord[1]));//;
+								String[] dates = map.get("Quand?").split("->");
+								Interval interval = new Interval(
+										WhenQuestion.dtf.parse(dates[0]),
+										WhenQuestion.dtf.parse(dates[1]));
+								GeoStoryItem geo = new GeoStoryItem(
+										interval,
+										map.get("Nom du lieu?"),
+										ll,
+										map.get("Description?"));
+								Window.alert("GeoStory "+geo+" "+Arrays.toString(dates)+" "+map.get("Quand?"));
+								types.itemAdded.shareEvent(geo);
+								types.centerEvent.shareEvent(null);
+							}});
+						tested.center();tested.show();
+					}});
+				controls.add(addOne);
+			}
+			{
+				Button reset = new Button("Reset");
+				reset.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						model.reset();
+						types.centerEvent.shareEvent(null);
+					}});
+				controls.add(reset);
+			}
+			{
+				final TextBox search = new TextBox();
+				search.setTitle("Search");
+				final Button go = new Button("go");
+				go.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						Set<GeoStoryItem> itemsSet = model.getItems();
+						// filtering
+						if (search.getText() != null && !search.getText().isEmpty()) {
+							for (GeoStoryItem geoStoryItem : itemsSet) {
+								if (geoStoryItem.getDescription().contains(search.getText())) {
+									geoStoryItem.setVisible(true);
+								} else {
+									geoStoryItem.setVisible(false);
 								}
 							}
-							types.centerEvent.shareEvent(null);
-						}});
-					controls.add(go);
-					controls.add(search);
-				}
-				{
-					final Button removeFilter = new Button("remove filter");
-					removeFilter.addClickHandler(new ClickHandler(){
-						@Override
-						public void onClick(ClickEvent event) {
-							Set<GeoStoryItem> itemsSet = pad.getItems();
-							// filtering
-							for (GeoStoryItem geoStoryItem : itemsSet) {
-								geoStoryItem.setVisible(true);
-							}
-							types.centerEvent.shareEvent(null);
-						}});
-					controls.add(removeFilter);
-				}
+						}
+						types.centerEvent.shareEvent(null);
+					}});
+				controls.add(go);
+				controls.add(search);
+			}
+			{
+				final Button removeFilter = new Button("remove filter");
+				removeFilter.addClickHandler(new ClickHandler(){
+					@Override
+					public void onClick(ClickEvent event) {
+						Set<GeoStoryItem> itemsSet = model.getItems();
+						// filtering
+						for (GeoStoryItem geoStoryItem : itemsSet) {
+							geoStoryItem.setVisible(true);
+						}
+						types.centerEvent.shareEvent(null);
+					}});
+				controls.add(removeFilter);
 			}
 			panel.addSouth(time,150);
 			panel.addWest(controls,150);
@@ -288,21 +304,7 @@ public class GeoStory extends Composite implements ResizeHandler{
 			Window.addResizeHandler(this);
 		}
 		this.initWidget(panel);
-		// Deal with new Center TODO should be the time window.
-		types.centerEvent.registerHandler(new WHandler<Date>(){
-			public void onEvent(WEvent<Date> elt) {
-				space.drawSpace();
-				drawTime();
-			}});
-		types.itemSelected.registerHandler(new WHandler<GeoStoryItem>(){
-			public void onEvent(WEvent<GeoStoryItem> elt) {
-				space.centerOnItem(elt.getElement());
-			}});
-		types.itemOver.registerHandler(new WHandler<GeoStoryItem>(){
-			public void onEvent(WEvent<GeoStoryItem> elt) {
-				//TODO
-			}});
-		// Just a short term timer to check and resize the badly initialized map.
+		// Short term timer to check and resize the badly initialized map.
 		Timer t = new Timer(){public void run() {
 			space.checkResizeAndCenter();
 			time.init();
@@ -314,7 +316,6 @@ public class GeoStory extends Composite implements ResizeHandler{
 		Timer t = new Timer(){
 			public void run() {
 				if (!event.get1().equals("")){
-					//geo.getCache().reset();
 					geo.getLatLng(event.get1(), new LatLngCallback(){
 						@Override
 						public void onFailure() {
@@ -334,10 +335,6 @@ public class GeoStory extends Composite implements ResizeHandler{
 		};
 		t.schedule(delay);
 	}
-	
-	public void drawTime(){
-		time.refresh();
-	}
 
 	public void onResize(ResizeEvent event) {
 		space.setSize("100%", "100%");
@@ -345,8 +342,8 @@ public class GeoStory extends Composite implements ResizeHandler{
 		space.checkResizeAndCenter();
 	}
 
-	public String getEmail() {
-		return this.email.getText();
-	}
+	public GeoEventTypes getTypes() {return types;}
+	
+	public String getEmail() {return this.email.getText();}
 
 }

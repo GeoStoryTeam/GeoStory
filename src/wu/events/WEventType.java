@@ -1,5 +1,6 @@
 package wu.events;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.GwtEvent.Type;
@@ -19,7 +20,6 @@ import com.google.gwt.event.shared.GwtEvent.Type;
  * - try to know what event triggered another one to build a dependancy graph.
  * - record who registered handlers for what to show whose connected on the event type.
  * 
- * 
  * Describe an example.
  * 
  * @author joris
@@ -27,33 +27,35 @@ import com.google.gwt.event.shared.GwtEvent.Type;
  * @param <Element>
  */
 public class WEventType<Element> {
-	
+
 	private final GwtEvent.Type<WHandler<Element>> type;
-	
-	private HandlerManager bus;
-	
-	private static HandlerManager defaultManager = new HandlerManager(null);
-	
+
+	private final HandlerManager bus;
+
+	private final static HandlerManager defaultManager = new HandlerManager(null);
+
+	private boolean logging = false;
+
 	private WEventType(HandlerManager b){
 		type = new GwtEvent.Type<WHandler<Element>>();
 		bus = b;
 	}
-	
+
 	/**
 	 * This builds a new Event type that will convey attachment of the given type.
 	 */
 	public WEventType(){
 		this(defaultManager);
 	}
-	
+
 	private Type<WHandler<Element>> getType(){
 		return type;
 	}
-	
+
 	private WEvent<Element> buildEvent(Element elt){
 		return new WEvent<Element>(elt, type);
 	}
-	
+
 	/**
 	 * Use this method to create and share an event.
 	 * @param elt provides the attachment for the event.
@@ -62,9 +64,19 @@ public class WEventType<Element> {
 		// TODO find a transparent way to record what triggered this event
 		// - shareEvent(Element et, WEvent trigger)
 		// - does reflexion allows to see the stack (the calling method would be a onEvent from WHandler)
+		// trick to access the calling stack and then the calling method
+		if (logging) {
+			try{throw new Exception("Message:"+elt.toString());}
+			catch(Exception e){
+				StackTraceElement[] stack = e.getStackTrace();
+				GWT.log("------------------------");
+				GWT.log(e.getMessage());
+				GWT.log(stack[1].getClassName()+" ->" +this.getClass());
+			}
+		}
 		bus.fireEvent(this.buildEvent(elt));
 	}
-	
+
 	/**
 	 * Register a specific handler that will be triggered when an event is shared for this event type.
 	 * @param handler the handler that will be triggered on each event for this event type.
@@ -72,7 +84,7 @@ public class WEventType<Element> {
 	public void registerHandler(WHandler<Element> handler){
 		bus.addHandler(this.type, handler);
 	}
-	
+
 	/**
 	 * Allows to register one handler for multiple Event types which share the same attachment class.
 	 * @param <Element>
@@ -84,7 +96,5 @@ public class WEventType<Element> {
 			type.registerHandler(handler);
 		}
 	}
-	
-	
 }
 

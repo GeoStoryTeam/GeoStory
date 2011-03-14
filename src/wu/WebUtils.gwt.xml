@@ -3,11 +3,7 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
 
-  <inherits name='com.google.gwt.widgetideas.GWTCanvas'/>
-  <inherits name="com.google.gwt.widgetideas.GlassPanel"/>
   <inherits name='com.google.gwt.json.JSON'/>
-  <!-- <inherits name="com.google.gwt.widgetideas.DatePicker"/> -->
-  <!-- <inherits name='com.google.gwt.libideas.LibIdeas' />      -->
   
   <inherits name="com.google.gwt.maps.GoogleMaps" />
   <!-- Inherit the default GWT style sheet.  You can change       -->
@@ -23,6 +19,8 @@
   <!-- <entry-point class='wu.client.WebUtils'/>                  -->
 
   <!-- Specify the paths for translatable code                    -->
+  
+  
     <source path='client'/>
     <source path="datastore"/>
 	<source path="client"/>
@@ -30,6 +28,8 @@
 	<source path="questions"/>
 	<source path="events"/>
     <source path="geostory"/>
+
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAjAUuFEfxAsO5BVcFuzrZJBQ1usn6vCMm9143mqV4dAdeZjpIqBQSYfcwfnfRPg48BoReapCyDpMvpg" />
 
 
 </module>
